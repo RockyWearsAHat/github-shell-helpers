@@ -16,6 +16,8 @@ git add .
 git commit -m "$COMMIT_MESSAGE"
 git branch -m "$BRANCH_NAME"
 
+#added a test comment to see what happens
+
 # add or update the origin remote
 if git remote | grep -q "^origin$"; then
   git remote set-url origin "$REMOTE_URL"
