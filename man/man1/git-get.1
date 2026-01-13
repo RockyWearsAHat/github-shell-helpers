@@ -1,0 +1,45 @@
+.TH GIT-GET 1 "January 2026" "git-get" "Git Manual"
+.SH NAME
+git-get \- initialize a local repository from a remote
+.SH SYNOPSIS
+.B git get
+.I remote-url
+.RI [ branch ]
+.SH DESCRIPTION
+.B git get
+is a small helper that initializes a new Git repository in the current
+directory, adds the given remote as
+.B origin
+and pulls the specified branch.
+.PP
+This is roughly equivalent to:
+.EX
+git init
+git remote add origin <remote-url>
+git pull origin <branch>
+.EE
+.SH ARGUMENTS
+.TP
+.I remote-url
+Remote repository URL to use as
+.B origin
+(e.g. a GitHub HTTPS URL).
+.TP
+.I branch
+Optional branch name to pull. Defaults to
+.BR main .
+.SH EXAMPLES
+.TP
+Initialize a repo and pull main from a GitHub remote:
+.EX
+git get https://github.com/user/project.git
+.EE
+.TP
+Initialize a repo and pull a specific branch:
+.EX
+git get https://github.com/user/project.git develop
+.EE
+.SH SEE ALSO
+.BR git-init (1),
+.BR git-remote (1),
+.BR git-pull (1)

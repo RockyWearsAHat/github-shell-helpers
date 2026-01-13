@@ -1,0 +1,63 @@
+.TH GIT-INITIALIZE 1 "January 2026" "git-initialize" "Git Manual"
+.SH NAME
+git-initialize \- initialize and push a local repository to a remote
+.SH SYNOPSIS
+.B git initialize
+.I remote-url
+.RI [ branch ]
+.RI [ commit-message ]
+.SH DESCRIPTION
+.B git initialize
+is a convenience helper (distinct from core
+.BR git-init (1)) that
+initializes a Git repository in the current directory (if not already a
+repository), creates an initial commit, sets up the
+.B origin
+remote, and pushes the chosen branch.
+.PP
+It performs the following steps:
+.IP \(bu 2
+.B git init
+.IP \(bu 2
+.B git add .
+.IP \(bu 2
+.B git commit -m <commit-message>
+.IP \(bu 2
+Rename the current branch to
+.I branch
+.IP \(bu 2
+Add or update the
+.B origin
+remote to
+.IR remote-url
+.IP \(bu 2
+.B git push -u origin <branch>
+.SH ARGUMENTS
+.TP
+.I remote-url
+Remote repository URL to set as
+.B origin
+(e.g. a GitHub HTTPS URL).
+.TP
+.I branch
+Optional branch name to create/rename to. Defaults to
+.BR main .
+.TP
+.I commit-message
+Optional commit message for the initial commit. Defaults to
+.BR "Initial commit" .
+.SH EXAMPLES
+.TP
+Initialize the current directory and push main to a GitHub remote:
+.EX
+git initialize https://github.com/user/new-repo.git
+.EE
+.TP
+Initialize and push a different branch with a custom message:
+.EX
+git initialize https://github.com/user/new-repo.git develop "Bootstrap project layout"
+.EE
+.SH SEE ALSO
+.BR git-init (1),
+.BR git-remote (1),
+.BR git-push (1)

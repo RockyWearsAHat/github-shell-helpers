@@ -1,0 +1,84 @@
+.TH GIT-UPLOAD 1 "January 2026" "git-upload" "Git Manual"
+.SH NAME
+git-upload \- stage, commit, and push changes with optional AI commit message
+.SH SYNOPSIS
+.B git upload
+.RI [ -ai | --aiDiffCommitMsg
+.IR [ai-context] ]
+.RI [ commit-message ]
+.SH DESCRIPTION
+.B git upload
+is a convenience wrapper around
+.BR git-add (1),
+.BR git-commit (1),
+and
+.BR git-push (1)
+that stages all changes in the current repository, creates a commit, and pushes
+it to the
+.B main
+branch.
+.PP
+When invoked with
+.BR -ai
+or
+.BR --aiDiffCommitMsg ,
+.B git upload
+uses GitHub Copilot CLI (or an overridden AI command) to generate a commit
+message based on the current repository state.
+.SH OPTIONS
+.TP
+.BR -ai ,
+.BR --aiDiffCommitMsg
+Enable AI-based commit message generation. If installed and configured,
+GitHub Copilot CLI is used to create a concise commit subject line.
+.TP
+.I ai-context
+Optional free-form text immediately following
+.BR -ai
+or
+.BR --aiDiffCommitMsg .
+This text is appended as additional context to the default AI prompt.
+.TP
+.I commit-message
+Optional manual commit message. When AI is enabled, this is used as a
+fallback if AI is unavailable or fails. When AI is not enabled, this becomes
+the commit message. If omitted, a default commit message is used.
+.SH AI INTEGRATION
+By default
+.B git upload
+invokes the
+.BR copilot (1)
+CLI with a carefully crafted prompt instructing it to output a single git
+commit subject line.
+.PP
+If the environment variable
+.B GIT_UPLOAD_AI_CMD
+is set, its value is used instead of the default Copilot command. The AI
+command is executed with the environment variable
+.B GIT_UPLOAD_AI_PROMPT
+containing the final prompt text.
+.PP
+If AI is requested (using
+.BR -ai )
+and the AI command is not available or fails, and no manual commit message
+was provided, the command aborts without creating a commit.
+.SH EXAMPLES
+.TP
+Generate a commit message using AI and push:
+.EX
+git upload -ai
+.EE
+.TP
+Use AI with extra context and a manual fallback message:
+.EX
+git upload -ai "focus on UX changes" "Fallback commit message"
+.EE
+.TP
+Normal usage without AI:
+.EX
+git upload "Fix typo in README"
+.EE
+.SH SEE ALSO
+.BR git-commit (1),
+.BR git-push (1),
+.BR copilot (1)

@@ -1,0 +1,305 @@
+#!/bin/zsh
+
+# install-git-shell-helpers
+#
+# One-shot (and re-runnable) installer for the custom git subcommands:
+#   - git-upload
+#   - git-get
+#   - git-initialize
+#
+# Responsibilities:
+#   - Ensure ~/bin and ~/man/man1 exist
+#   - Install/update the git-* scripts into ~/bin (chmod +x)
+#   - Install/update their man pages into ~/man/man1
+#   - Ensure PATH and MANPATH in ~/.zshrc include those locations (no dups)
+#
+# After running, you should be able to use:
+#   - git upload
+#   - git get
+#   - git initialize
+# and see docs via:
+#   - git help upload
+#   - git help get
+#   - git help initialize
+
+set -euo pipefail
+
+BIN_DIR="${HOME}/bin"
+MAN_DIR="${HOME}/man/man1"
+ZSHRC="${HOME}/.zshrc"
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+ensure_dir() {
+  local dir="$1"
+  if [ ! -d "$dir" ]; then
+    mkdir -p "$dir"
+  fi
+}
+
+ensure_line_in_file() {
+  local file="$1"
+  local line="$2"
+
+  if [ ! -f "$file" ]; then
+    touch "$file"
+  fi
+
+  # Add line only if it doesn't already exist (exact match)
+  if ! grep -qxF "$line" "$file" 2>/dev/null; then
+    printf '%s\n' "$line" >>"$file"
+  fi
+}
+
+install_script() {
+  local name="$1"
+  local src="${SCRIPT_DIR}/${name}"
+  local dest="${BIN_DIR}/${name}"
+
+  if [ ! -f "$src" ]; then
+    echo "[install-git-shell-helpers] WARNING: source script not found: $src" >&2
+    return
+  fi
+
+  cp "$src" "$dest"
+  chmod +x "$dest"
+  echo "[install-git-shell-helpers] Installed script: $dest"
+}
+
+install_man_git_upload() {
+  local dest="${MAN_DIR}/git-upload.1"
+  cat >"$dest" <<'EOF'
+.TH GIT-UPLOAD 1 "January 2026" "git-upload" "Git Manual"
+.SH NAME
+git-upload \- stage, commit, and push changes with optional AI commit message
+.SH SYNOPSIS
+.B git upload
+.RI [ -ai | --aiDiffCommitMsg
+.IR [ai-context] ]
+.RI [ commit-message ]
+.SH DESCRIPTION
+.B git upload
+is a convenience wrapper around
+.BR git-add (1),
+.BR git-commit (1),
+and
+.BR git-push (1)
+that stages all changes in the current repository, creates a commit, and pushes
+it to the
+.B main
+branch.
+.PP
+When invoked with
+.BR -ai
+or
+.BR --aiDiffCommitMsg ,
+.B git upload
+uses GitHub Copilot CLI (or an overridden AI command) to generate a commit
+message based on the current repository state.
+.SH OPTIONS
+.TP
+.BR -ai ,
+.BR --aiDiffCommitMsg
+Enable AI-based commit message generation. If installed and configured,
+GitHub Copilot CLI is used to create a concise commit subject line.
+.TP
+.I ai-context
+Optional free-form text immediately following
+.BR -ai
+or
+.BR --aiDiffCommitMsg .
+This text is appended as additional context to the default AI prompt.
+.TP
+.I commit-message
+Optional manual commit message. When AI is enabled, this is used as a
+fallback if AI is unavailable or fails. When AI is not enabled, this becomes
+the commit message. If omitted, a default commit message is used.
+.SH AI INTEGRATION
+By default
+.B git upload
+invokes the
+.BR copilot (1)
+CLI with a carefully crafted prompt instructing it to output a single git
+commit subject line.
+.PP
+If the environment variable
+.B GIT_UPLOAD_AI_CMD
+is set, its value is used instead of the default Copilot command. The AI
+command is executed with the environment variable
+.B GIT_UPLOAD_AI_PROMPT
+containing the final prompt text.
+.PP
+If AI is requested (using
+.BR -ai )
+and the AI command is not available or fails, and no manual commit message
+was provided, the command aborts without creating a commit.
+.SH EXAMPLES
+.TP
+Generate a commit message using AI and push:
+.EX
+git upload -ai
+.EE
+.TP
+Use AI with extra context and a manual fallback message:
+.EX
+git upload -ai "focus on UX changes" "Fallback commit message"
+.EE
+.TP
+Normal usage without AI:
+.EX
+git upload "Fix typo in README"
+.EE
+.SH SEE ALSO
+.BR git-commit (1),
+.BR git-push (1),
+.BR copilot (1)
+EOF
+  echo "[install-git-shell-helpers] Installed man page: $dest"
+}
+
+install_man_git_get() {
+  local dest="${MAN_DIR}/git-get.1"
+  cat >"$dest" <<'EOF'
+.TH GIT-GET 1 "January 2026" "git-get" "Git Manual"
+.SH NAME
+git-get \- initialize a local repository from a remote
+.SH SYNOPSIS
+.B git get
+.I remote-url
+.RI [ branch ]
+.SH DESCRIPTION
+.B git get
+is a small helper that initializes a new Git repository in the current
+directory, adds the given remote as
+.B origin
+and pulls the specified branch.
+.PP
+This is roughly equivalent to:
+.EX
+git init
+git remote add origin <remote-url>
+git pull origin <branch>
+.EE
+.SH ARGUMENTS
+.TP
+.I remote-url
+Remote repository URL to use as
+.B origin
+(e.g. a GitHub HTTPS URL).
+.TP
+.I branch
+Optional branch name to pull. Defaults to
+.BR main .
+.SH EXAMPLES
+.TP
+Initialize a repo and pull main from a GitHub remote:
+.EX
+git get https://github.com/user/project.git
+.EE
+.TP
+Initialize a repo and pull a specific branch:
+.EX
+git get https://github.com/user/project.git develop
+.EE
+.SH SEE ALSO
+.BR git-init (1),
+.BR git-remote (1),
+.BR git-pull (1)
+EOF
+  echo "[install-git-shell-helpers] Installed man page: $dest"
+}
+
+install_man_git_initialize() {
+  local dest="${MAN_DIR}/git-initialize.1"
+  cat >"$dest" <<'EOF'
+.TH GIT-INITIALIZE 1 "January 2026" "git-initialize" "Git Manual"
+.SH NAME
+git-initialize \- initialize and push a local repository to a remote
+.SH SYNOPSIS
+.B git initialize
+.I remote-url
+.RI [ branch ]
+.RI [ commit-message ]
+.SH DESCRIPTION
+.B git initialize
+is a convenience helper (distinct from core
+.BR git-init (1)) that
+initializes a Git repository in the current directory (if not already a
+repository), creates an initial commit, sets up the
+.B origin
+remote, and pushes the chosen branch.
+.PP
+It performs the following steps:
+.IP \(bu 2
+.B git init
+.IP \(bu 2
+.B git add .
+.IP \(bu 2
+.B git commit -m <commit-message>
+.IP \(bu 2
+Rename the current branch to
+.I branch
+.IP \(bu 2
+Add or update the
+.B origin
+remote to
+.IR remote-url
+.IP \(bu 2
+.B git push -u origin <branch>
+.SH ARGUMENTS
+.TP
+.I remote-url
+Remote repository URL to set as
+.B origin
+(e.g. a GitHub HTTPS URL).
+.TP
+.I branch
+Optional branch name to create/rename to. Defaults to
+.BR main .
+.TP
+.I commit-message
+Optional commit message for the initial commit. Defaults to
+.BR "Initial commit" .
+.SH EXAMPLES
+.TP
+Initialize the current directory and push main to a GitHub remote:
+.EX
+git initialize https://github.com/user/new-repo.git
+.EE
+.TP
+Initialize and push a different branch with a custom message:
+.EX
+git initialize https://github.com/user/new-repo.git develop "Bootstrap project layout"
+.EE
+.SH SEE ALSO
+.BR git-init (1),
+.BR git-remote (1),
+.BR git-push (1)
+EOF
+  echo "[install-git-shell-helpers] Installed man page: $dest"
+}
+
+main() {
+  echo "[install-git-shell-helpers] Installing git shell helpers..."
+
+  ensure_dir "$BIN_DIR"
+  ensure_dir "$MAN_DIR"
+
+  install_script "git-upload"
+  install_script "git-get"
+  install_script "git-initialize"
+
+  install_man_git_upload
+  install_man_git_get
+  install_man_git_initialize
+
+  # Ensure PATH and MANPATH are wired in ~/.zshrc (idempotent)
+  ensure_line_in_file "$ZSHRC" 'export PATH="$HOME/bin:$PATH"'
+  ensure_line_in_file "$ZSHRC" 'export MANPATH="$HOME/man:$MANPATH"'
+
+  echo "[install-git-shell-helpers] Done. Open a new terminal or run:"
+  echo "  source $ZSHRC"
+  echo "Then you can use: git upload, git get, git initialize, and view docs via git help <command>."
+}
+
+main "$@"
