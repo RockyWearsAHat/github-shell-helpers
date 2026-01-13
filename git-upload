@@ -79,14 +79,20 @@ generate_ai_message() {
 
 	local default_prompt="You are generating a git commit message.
 
-Given the following git diff, write a single, high-quality git commit subject line that clearly summarizes what changed and why.
+Your job: examine the current repository state and whatever git history or diffs you need, then produce a single high-quality git commit SUBJECT line that clearly summarizes what changed and why.
 
-Requirements:
+Requirements for the SUBJECT line:
 - Use imperative mood (e.g. 'Add X', 'Fix Y', 'Refactor Z').
 - Maximum 72 characters.
-- Do NOT mention checking status, diffs, tools, or instructions.
+- Do NOT mention checking status, diffs, tools, agents, or instructions.
 - Do NOT describe what you will do; describe the code change itself.
-- Output ONLY the final subject line, with no quotes or extra text."
+
+Output protocol (IMPORTANT):
+- You may think through the problem in multiple messages.
+- At the very end, output ONE final line in the exact format:
+  COMMIT: <subject line>
+- Do NOT output any other lines starting with 'COMMIT:'.
+"
 	local effective_prompt
 
 	effective_prompt="$default_prompt"
@@ -96,20 +102,27 @@ Requirements:
 Additional context from user: $ai_extra_context"
 	fi
 
-	# Use staged changes for the diff so we don't accidentally commit
-	# un-staged files. If nothing is staged, use the working-tree diff.
-	if git diff --cached --quiet 2>/dev/null; then
-		diff_source="working tree"
-		diff_cmd="git diff"
-	else
-		diff_source="staged changes"
-		diff_cmd="git diff --cached"
+	echo "[git-upload] Generating AI commit message via Copilot…" >&2
+
+	# Call Copilot CLI (or overridden AI command) with the constructed prompt.
+	# Capture full output so we can extract only the final COMMIT: line.
+	local ai_output
+	if ! ai_output=$(GIT_UPLOAD_AI_PROMPT="$effective_prompt" eval "$ai_cmd" 2>/dev/null); then
+		echo "[git-upload] AI command failed; skipping AI" >&2
+		return 1
 	fi
 
-	echo "[git-upload] Generating AI commit message from $diff_source…" >&2
+	# Extract the last line starting with COMMIT: and strip the prefix.
+	local commit_line
+	commit_line=$(printf '%s
+' "$ai_output" | grep '^COMMIT: ' | tail -n 1 | sed 's/^COMMIT: //')
 
-	# shellcheck disable=SC2086
-	eval "$diff_cmd" | GIT_UPLOAD_AI_PROMPT="$effective_prompt" eval "$ai_cmd" | head -n 1 | tr '\n' ' '
+	if [ -z "${commit_line// /}" ]; then
+		echo "[git-upload] AI did not produce a COMMIT: line; skipping AI" >&2
+		return 1
+	fi
+
+	printf '%s' "$commit_line"
 }
 
 main() {
