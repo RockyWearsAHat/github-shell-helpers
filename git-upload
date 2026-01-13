@@ -36,16 +36,24 @@ use_ai=false
 user_msg=""
 ai_prompt=""
 
+expect_ai_prompt_next=false
+
 for arg in "$@"; do
 	case "$arg" in
 		--aiDiffCommitMsg|-ai)
 			use_ai=true
+			expect_ai_prompt_next=true
 			;;
 		--*)
 			# Ignore other flags for now
 			;;
 		*)
-			if [ -z "$user_msg" ]; then
+			if [ "$expect_ai_prompt_next" = true ]; then
+				# This non-flag arg immediately after -ai/--aiDiffCommitMsg
+				# is treated as the AI prompt argument.
+				ai_prompt="$arg"
+				expect_ai_prompt_next=false
+			elif [ -z "$user_msg" ]; then
 				user_msg="$arg"
 			fi
 			;;
@@ -89,7 +97,7 @@ generate_ai_message() {
 }
 
 main() {
-	if [ "$use_ai" = true ]; then
+	if [ "$use_ai" = true ] && [ -z "$ai_prompt" ]; then
 		printf "AI prompt (leave blank for default): " >&2
 		IFS= read -r ai_prompt || ai_prompt=""
 	fi
