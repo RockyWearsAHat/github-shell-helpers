@@ -77,7 +77,16 @@ generate_ai_message() {
 		return 1
 	fi
 
-	local default_prompt="examine differences between the last known push to this repository and the current state, write a clean concise one-three line message for this diff"
+	local default_prompt="You are generating a git commit message.
+
+Given the following git diff, write a single, high-quality git commit subject line that clearly summarizes what changed and why.
+
+Requirements:
+- Use imperative mood (e.g. 'Add X', 'Fix Y', 'Refactor Z').
+- Maximum 72 characters.
+- Do NOT mention checking status, diffs, tools, or instructions.
+- Do NOT describe what you will do; describe the code change itself.
+- Output ONLY the final subject line, with no quotes or extra text."
 	local effective_prompt
 
 	effective_prompt="$default_prompt"
