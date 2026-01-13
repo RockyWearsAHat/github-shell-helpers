@@ -3,56 +3,57 @@
 # git-upload
 #
 # Usage:
-#   git-upload [--aiDiffCommitMsg|-ai] [commit message]
+#   git-upload [-ai|--aiDiffCommitMsg [ai-context]] [commit message]
 #
 # Behaviour:
 #   - If --aiDiffCommitMsg / -ai is passed, the script will generate a commit
-#     message from the current diff using an external AI helper command.
-#   - Otherwise, it uses the first non-flag argument as the commit message,
+#     message from the current diff using GitHub Copilot CLI by default.
+#   - The first non-flag argument after -ai (if any) is treated as optional
+#     extra context to append to the default AI prompt.
+#   - The next non-flag argument (if any) is used as a fallback/manual
+#     commit message if AI is unavailable or fails.
+#   - Without -ai, the first non-flag argument is the commit message,
 #     defaulting to "default commit message".
 #
 # AI integration:
-#   To avoid hard-coding a specific tool, this script expects an environment
-#   variable GIT_UPLOAD_AI_CMD to point to a command that:
-#     - reads the diff from stdin
-#     - prints a single-line commit message to stdout
+#   Default behaviour (no configuration needed as long as `copilot` is
+#   installed and on PATH):
+#     - The script builds a prompt like:
+#         "examine differences between the last known push to this repository
+#          and the current state, write a clean concise one-three line message
+#          for this diff"
+#       and, if you provided [ai-context] after -ai, appends that text.
+#     - It then calls GitHub Copilot CLI non-interactively:
+#         copilot -s --allow-all-tools --allow-all-paths -p "$GIT_UPLOAD_AI_PROMPT"
 #
-#   When the -ai/--aiDiffCommitMsg flag is used, you'll be prompted:
-#     "AI prompt (leave blank for default): "
-#   If you press Enter, the script uses this default prompt:
-#     "examine differences between the last known push to this repository and the current state, write a clean concise one-three line message for this diff"
-#
-#   The chosen prompt is exposed to the AI command via the
-#   GIT_UPLOAD_AI_PROMPT environment variable. For example, with GitHub
-#   Copilot CLI installed via Homebrew (binary name: `copilot`):
-#     export GIT_UPLOAD_AI_CMD='copilot -s --allow-all-tools --allow-all-paths -p "$GIT_UPLOAD_AI_PROMPT"'
-#
-#   You can instead point GIT_UPLOAD_AI_CMD at any other AI CLI that accepts
-#   a prompt (via $GIT_UPLOAD_AI_PROMPT) and optionally reads a diff on stdin.
+#   Advanced: you may optionally override the full AI command via
+#   GIT_UPLOAD_AI_CMD for a single shell/session, but this is not required.
 
 set -euo pipefail
 
 use_ai=false
 user_msg=""
-ai_prompt=""
+ai_extra_context=""
 
-expect_ai_prompt_next=false
+DEFAULT_AI_CMD='copilot -s --allow-all-tools --allow-all-paths -p "$GIT_UPLOAD_AI_PROMPT"'
+
+expect_ai_context_next=false
 
 for arg in "$@"; do
 	case "$arg" in
 		--aiDiffCommitMsg|-ai)
 			use_ai=true
-			expect_ai_prompt_next=true
+			expect_ai_context_next=true
 			;;
 		--*)
 			# Ignore other flags for now
 			;;
 		*)
-			if [ "$expect_ai_prompt_next" = true ]; then
+			if [ "$expect_ai_context_next" = true ]; then
 				# This non-flag arg immediately after -ai/--aiDiffCommitMsg
-				# is treated as the AI prompt argument.
-				ai_prompt="$arg"
-				expect_ai_prompt_next=false
+				# is treated as optional extra AI context.
+				ai_extra_context="$arg"
+				expect_ai_context_next=false
 			elif [ -z "$user_msg" ]; then
 				user_msg="$arg"
 			fi
@@ -61,23 +62,29 @@ for arg in "$@"; do
 done
 
 generate_ai_message() {
-	if [ -z "${GIT_UPLOAD_AI_CMD-}" ]; then
-		echo "[git-upload] GIT_UPLOAD_AI_CMD is not set; falling back to manual message" >&2
-		return 1
+	local ai_cmd
+
+	if [ -n "${GIT_UPLOAD_AI_CMD-}" ]; then
+		ai_cmd="$GIT_UPLOAD_AI_CMD"
+	else
+		ai_cmd="$DEFAULT_AI_CMD"
 	fi
 
-	if ! command -v ${GIT_UPLOAD_AI_CMD%% *} >/dev/null 2>&1; then
-		echo "[git-upload] AI command not found: ${GIT_UPLOAD_AI_CMD%% *}" >&2
+	local ai_binary
+	ai_binary=${ai_cmd%% *}
+	if ! command -v "$ai_binary" >/dev/null 2>&1; then
+		echo "[git-upload] AI command not found: $ai_binary; skipping AI" >&2
 		return 1
 	fi
 
 	local default_prompt="examine differences between the last known push to this repository and the current state, write a clean concise one-three line message for this diff"
 	local effective_prompt
 
-	if [ -n "${ai_prompt-}" ]; then
-		effective_prompt="$ai_prompt"
-	else
-		effective_prompt="$default_prompt"
+	effective_prompt="$default_prompt"
+	if [ -n "$ai_extra_context" ]; then
+		effective_prompt="$effective_prompt
+
+Additional context from user: $ai_extra_context"
 	fi
 
 	# Use staged changes for the diff so we don't accidentally commit
@@ -93,15 +100,10 @@ generate_ai_message() {
 	echo "[git-upload] Generating AI commit message from $diff_source…" >&2
 
 	# shellcheck disable=SC2086
-	eval "$diff_cmd" | GIT_UPLOAD_AI_PROMPT="$effective_prompt" eval "$GIT_UPLOAD_AI_CMD" | head -n 1 | tr '\n' ' '
+	eval "$diff_cmd" | GIT_UPLOAD_AI_PROMPT="$effective_prompt" eval "$ai_cmd" | head -n 1 | tr '\n' ' '
 }
 
 main() {
-	if [ "$use_ai" = true ] && [ -z "$ai_prompt" ]; then
-		printf "AI prompt (leave blank for default): " >&2
-		IFS= read -r ai_prompt || ai_prompt=""
-	fi
-
 	git add .
 
 	commit_msg="${user_msg:-default commit message}"
