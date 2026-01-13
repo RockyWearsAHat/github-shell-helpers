@@ -114,6 +114,13 @@ main() {
 			if [ -n "${ai_msg// /}" ]; then
 				commit_msg="$ai_msg"
 			fi
+		else
+			# AI failed (e.g., Copilot not authenticated or not available)
+			if [ -z "$user_msg" ]; then
+				# No manual fallback message was provided; abort commit
+				echo "[git-upload] AI commit requested but unavailable and no fallback commit message provided. Aborting commit." >&2
+				exit 1
+			fi
 		fi
 	fi
 
