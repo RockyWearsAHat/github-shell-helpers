@@ -73,7 +73,9 @@ generate_ai_message() {
 	local ai_binary
 	ai_binary=${ai_cmd%% *}
 	if ! command -v "$ai_binary" >/dev/null 2>&1; then
-		echo "[git-upload] AI command not found: $ai_binary; skipping AI" >&2
+		echo "[git-upload] AI command '$ai_binary' not found. " \
+			"Install GitHub Copilot CLI (e.g. 'brew install copilot-cli' on macOS) " \
+			"and ensure it is on your PATH." >&2
 		return 1
 	fi
 
@@ -108,7 +110,9 @@ Additional context from user: $ai_extra_context"
 	# Capture full output so we can extract only the final COMMIT: line.
 	local ai_output
 	if ! ai_output=$(GIT_UPLOAD_AI_PROMPT="$effective_prompt" eval "$ai_cmd" 2>/dev/null); then
-		echo "[git-upload] AI command failed; skipping AI" >&2
+		echo "[git-upload] AI command '$ai_cmd' failed. " \
+			"Make sure GitHub Copilot CLI is installed and you have run 'copilot' " \
+			"at least once to authenticate." >&2
 		return 1
 	fi
 
