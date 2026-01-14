@@ -55,7 +55,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }} (original source snapshot)
+          body: |
+            This release tag (v${{ env.VERSION }}) points at the original commit where the version was first introduced.
+
+            GitHub's auto-generated "Source code" archives reflect that original snapshot and act as a fallback reference.
+
+            The attached installer package (github-shell-helpers-${{ env.VERSION }}.pkg) is rebuilt on each push to main while VERSION=${{ env.VERSION }}, so it always contains the latest fixes for this version line.
           draft: false
           prerelease: false
           files: |
