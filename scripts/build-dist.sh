@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 
 # Build script to assemble distributable artifacts for github-shell-helpers.
 #
