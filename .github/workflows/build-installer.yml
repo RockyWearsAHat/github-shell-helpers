@@ -42,3 +42,18 @@ jobs:
         with:
           name: github-shell-helpers-pkg
           path: dist/github-shell-helpers-*.pkg
+
+      - name: Read VERSION
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: echo "VERSION=$(cat VERSION)" >> "$GITHUB_ENV"
+
+      - name: Create or update GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/github-shell-helpers-${{ env.VERSION }}.pkg
