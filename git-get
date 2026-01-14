@@ -5,5 +5,5 @@ REPO=${1}
 BRANCH=${2:-main}
 
 git init
-git remote add origin ${REPO}
+# git remote add origin ${REPO}
 git pull origin ${BRANCH}
