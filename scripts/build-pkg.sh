@@ -43,7 +43,7 @@ cp "${ROOT_DIR}/man/man1/git-get.1"        "$MAN_PAYLOAD/git-get.1"
 cp "${ROOT_DIR}/man/man1/git-initialize.1" "$MAN_PAYLOAD/git-initialize.1"
 
 # Build the package (no scripts; pure payload into /usr/local)
-/pkgbuild --root "$BUILD_DIR" \
+pkgbuild --root "$BUILD_DIR" \
   --identifier "$IDENTIFIER" \
   --version "$VERSION" \
   --install-location / \
