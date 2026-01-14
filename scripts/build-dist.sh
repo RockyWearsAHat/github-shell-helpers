@@ -12,7 +12,7 @@ DIST_DIR="${SCRIPT_DIR}/dist"
 
 mkdir -p "$DIST_DIR"
 
-cp "${SCRIPT_DIR}/github-shell-helpers-installer.sh" "${DIST_DIR}/github-shell-helpers-installer.sh"
-chmod +x "${DIST_DIR}/github-shell-helpers-installer.sh"
+cp "${SCRIPT_DIR}/Git-Shell-Helpers-Installer.sh" "${DIST_DIR}/Git-Shell-Helpers-Installer.sh"
+chmod +x "${DIST_DIR}/Git-Shell-Helpers-Installer.sh"
 
-echo "[build-dist] Wrote dist/github-shell-helpers-installer.sh"
+echo "[build-dist] Wrote dist/Git-Shell-Helpers-Installer.sh"
