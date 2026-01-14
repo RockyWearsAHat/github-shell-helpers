@@ -8,9 +8,32 @@ Small quality-of-life helpers wrapped as git subcommands:
 
 ## Installation options
 
-### 1. One-line script installer (recommended for most users)
+### 1. macOS .pkg installer (recommended)
 
-This installs the helpers into `~/bin` and their man pages into `~/man/man1`, and wires `PATH` and `MANPATH` in your `~/.zshrc`.
+On macOS, the preferred way to install is via the native `.pkg` installer:
+
+- Installs binaries into `/usr/local/bin` and man pages into `/usr/local/share/man/man1`.
+- Does **not** modify your shell config files.
+
+Grab the latest packaged macOS installer from the latest release:
+
+- [github-shell-helpers latest release](https://github.com/RockyWearsAHat/github-shell-helpers/releases/latest)
+
+After downloading `github-shell-helpers-<version>.pkg`:
+
+1. Double-click the `.pkg`.
+2. Follow the standard macOS Installer flow.
+
+Once complete, the commands and man pages should be available immediately in any new shell:
+
+- `git upload`
+- `git get`
+- `git initialize`
+- `git help upload|get|initialize`
+
+### 2. One-line script installer (portable alternative)
+
+If you prefer a script-based install into your home directory, use the installer script. This works well on macOS and other Unixy environments where you control your shell config.
 
 Direct download of the installer script:
 
@@ -28,31 +51,7 @@ After installation, either open a new terminal or run:
 source ~/.zshrc
 ```
 
-Then you can use:
-
-- `git upload`
-- `git get`
-- `git initialize`
-- `git help upload|get|initialize`
-
-### 2. macOS .pkg installer
-
-For a more "native" macOS experience, there is also a signed-style `.pkg` built by CI:
-
-- The pkg installs binaries into `/usr/local/bin` and man pages into `/usr/local/share/man/man1`.
-- It is built by GitHub Actions from the latest `main` branch and uploaded as an artifact named `github-shell-helpers-pkg`.
-
-Latest packaged macOS installer (once you publish a release):
-
-- [github-shell-helpers latest release](https://github.com/RockyWearsAHat/github-shell-helpers/releases/latest)
-
-Usage:
-
-1. Go to the **Actions** tab for this repo and open the latest successful run of the **Build installer** workflow.
-2. Download the `github-shell-helpers-pkg` artifact (`github-shell-helpers-<version>.pkg`).
-3. Double-click the `.pkg` and follow the standard macOS Installer flow.
-
-After installation, the commands and man pages should be available immediately in any new shell, without editing your `PATH`.
+Then you can use the same commands and help pages as with the `.pkg` installer.
 
 ## Why two installer methods?
 
