@@ -12,6 +12,10 @@ Small quality-of-life helpers wrapped as git subcommands:
 
 This installs the helpers into `~/bin` and their man pages into `~/man/man1`, and wires `PATH` and `MANPATH` in your `~/.zshrc`.
 
+Direct download of the installer script:
+
+- [Git-Shell-Helpers-Installer.sh](https://raw.githubusercontent.com/RockyWearsAHat/github-shell-helpers/main/Git-Shell-Helpers-Installer.sh)
+
 ```sh
 curl -fsSL \
   https://raw.githubusercontent.com/RockyWearsAHat/github-shell-helpers/main/Git-Shell-Helpers-Installer.sh \
@@ -37,6 +41,10 @@ For a more "native" macOS experience, there is also a signed-style `.pkg` built 
 
 - The pkg installs binaries into `/usr/local/bin` and man pages into `/usr/local/share/man/man1`.
 - It is built by GitHub Actions from the latest `main` branch and uploaded as an artifact named `github-shell-helpers-pkg`.
+
+Latest packaged macOS installer (once you publish a release):
+
+- [github-shell-helpers latest release](https://github.com/RockyWearsAHat/github-shell-helpers/releases/latest)
 
 Usage:
 
