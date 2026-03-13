@@ -43,6 +43,14 @@ If a versioned community cache is available, use it as pre-research context rath
 
 Use the user's focus and the inferred project intent aggressively. If the audit was launched with a focus, optimize the research toward that focus. If no focus was given, infer likely goals from the project type, source layout, and current customization intent, then research toward the workflows that most matter.
 
+The user focus is not a tag or a footnote — it defines what you should spend most of your research effort on. Examples:
+
+- User focus is "visual testing flow" → research how Copilot customization can support visual regression testing, screenshot comparison workflows, visual testing tools integration, and skills/agents for that workflow.
+- User focus is "qt qss" → research Qt/QSS patterns in Copilot customization, Style Sheet guidance, Qt-specific skills, and real Qt projects with `.github/` files.
+- No user focus → research broadly for this project type.
+
+Your general Copilot customization research (docs, file types, frontmatter, etc.) still matters, but the user-focus-specific research must be deep and specific, not a paragraph tacked onto generic findings.
+
 Do not smuggle in workflow preferences that the project did not ask for and the evidence does not justify. Visual testing, screenshot capture, replay tooling, autonomous debugging helpers, and other specialized flows are valid only when the user's focus, the project type, or the external evidence shows they are genuinely useful here. Do not recommend them as defaults for unrelated repositories just because they worked well somewhere else.
 
 ### File Type Purposes
