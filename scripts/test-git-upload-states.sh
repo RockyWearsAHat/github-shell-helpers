@@ -18,6 +18,13 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GIT_UPLOAD="$REPO_ROOT/git-upload"
 
+# Provide a mock AI command so -ai tests work in CI (where copilot is
+# not installed).  The mock emits the COMMIT_BEGIN/COMMIT_END markers
+# that generate_ai_message() expects.
+if ! command -v copilot >/dev/null 2>&1; then
+	export GIT_UPLOAD_AI_CMD='printf "COMMIT_BEGIN\ntest: synthetic state recovery commit\nCOMMIT_END\n"'
+fi
+
 # ── Test bookkeeping ───────────────────────────────────────────────────
 total=0
 passed=0
