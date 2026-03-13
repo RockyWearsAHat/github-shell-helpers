@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "anti-pattern",
+  "topic": "agents",
+  "statement": "When an agent's frontmatter description contradicts the behavior defined in its loaded skill, the model anchors on the agent description because it appears first in context during routing. Keep agent descriptions and body text aligned with the skill's actual design intent to prevent behavioral drift.",
+  "recommendationStrength": "recommended",
+  "applicability": "agent-design",
+  "evidenceRefs": [
+    {
+      "title": "VS Code — Custom agents (frontmatter fields)",
+      "url": "https://code.visualstudio.com/docs/copilot/customization/custom-agents",
+      "sourceType": "official-doc"
+    },
+    {
+      "title": "VS Code — Agent skills (progressive loading)",
+      "url": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+      "sourceType": "official-doc"
+    },
+    {
+      "title": "Burke Holland — Agent skills guide (progressive loading explanation)",
+      "url": "https://www.youtube.com/watch?v=fabAI1OKKww",
+      "sourceType": "public-video"
+    }
+  ],
+  "auditCompletedAt": "2026-03-12T22:00:00Z",
+  "freshnessCheckedAt": "2026-03-12T22:00:00Z",
+  "authoritativeSupport": "medium",
+  "liveRevalidated": true,
+  "contradictionCount": 0,
+  "clientBehaviorVersion": 1,
+  "publicSummary": "Agent description fields anchor model behavior before a skill is loaded. If the description says 'produce one output' but the skill says 'produce many outputs,' the model may cap output at one. Reconcile descriptions with skill intent.",
+  "cautionNotes": "The anchoring effect is inferred from observed audit behavior, not from explicit platform documentation.",
+  "nonGeneralizationNotes": "",
+  "submittedAt": "2026-03-13T04:39:02Z",
+  "submissionId": "20260313T043902Z-ftid5ahr",
+  "statementHash": "f687dec65bc31e5b0bf5ec5f79d0c6b61b9956edfd791b4ae3954b17cbecc770"
+}
