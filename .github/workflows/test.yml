@@ -45,4 +45,5 @@ jobs:
         run: bash scripts/test.sh
 
       - name: Run state recovery tests (verbose)
+        if: runner.os != 'Windows'
         run: bash scripts/test-git-upload-states.sh

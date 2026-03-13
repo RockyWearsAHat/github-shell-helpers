@@ -1057,40 +1057,35 @@ compute_diff_analysis() {
 		esac
 	done <<< "$changed_files"
 	
-	# Analyze the actual diff content
-	local in_hunk=0
-	local current_file=""
-	while IFS= read -r line; do
-		case "$line" in
-			"diff --git"*)
-				current_file=$(printf '%s' "$line" | sed 's/.*b\///')
-				;;
-			"+"[!+]*)
-				total_additions=$((total_additions + 1))
-				# Check if this is whitespace-only
-				local content="${line#?}"
-				if [ -z "${content// /}" ] || [ -z "${content//	/}" ]; then
-					whitespace_only_changes=$((whitespace_only_changes + 1))
-				# Check if this is a comment
-				elif printf '%s' "$content" | grep -qE '^[[:space:]]*(//|#|/\*|\*|<!--)'; then
-					comment_only_changes=$((comment_only_changes + 1))
-				else
-					code_additions=$((code_additions + 1))
-				fi
-				;;
-			"-"[!-]*)
-				total_deletions=$((total_deletions + 1))
-				local content="${line#?}"
-				if [ -z "${content// /}" ] || [ -z "${content//	/}" ]; then
-					whitespace_only_changes=$((whitespace_only_changes + 1))
-				elif printf '%s' "$content" | grep -qE '^[[:space:]]*(//|#|/\*|\*|<!--)'; then
-					comment_only_changes=$((comment_only_changes + 1))
-				else
-					code_deletions=$((code_deletions + 1))
-				fi
-				;;
-		esac
-	done <<< "$diff"
+	# Analyze the actual diff content in a single awk pass (fast for large diffs)
+	local awk_result
+	awk_result=$(printf '%s\n' "$diff" | awk '
+		/^\+[^+]/ {
+			add++
+			content = substr($0, 2)
+			# whitespace-only: nothing but spaces/tabs
+			gsub(/[ \t]/, "", content)
+			if (content == "") { ws++; next }
+			# comment line
+			if (content ~ /^(\/\/|#|\/\*|\*|<!--)/) { cmt++; next }
+			code_add++
+			next
+		}
+		/^-[^-]/ {
+			del++
+			content = substr($0, 2)
+			gsub(/[ \t]/, "", content)
+			if (content == "") { ws++; next }
+			if (content ~ /^(\/\/|#|\/\*|\*|<!--)/) { cmt++; next }
+			code_del++
+			next
+		}
+		END {
+			printf "%d %d %d %d %d %d\n", add, del, ws, cmt, code_add, code_del
+		}
+	')
+	read -r total_additions total_deletions whitespace_only_changes comment_only_changes \
+		code_additions code_deletions <<< "$awk_result"
 	
 	# Check for potential dead code patterns in additions
 	local dead_code_signals=0
@@ -1160,10 +1155,8 @@ compute_diff_analysis() {
 									printf '%s\n' "- TypeScript syntax/compile error (see tsc output)" >> "$syntax_tmpdir/errors"
 								fi
 							else
-								# No timeout available - run without timeout but skip if it takes too long
-								if ! (cd "$repo_root" && tsc --noEmit >/dev/null 2>&1); then
-									printf '%s\n' "- TypeScript syntax/compile error (see tsc output)" >> "$syntax_tmpdir/errors"
-								fi
+								# No timeout command available - skip tsc to avoid blocking
+								:
 							fi
 						) &
 						syntax_pids+=($!)
@@ -2577,8 +2570,16 @@ main() {
 		echo "[git-upload] ✅ Bisect session ended." >&2
 	fi
 
+	# --- git am (mailbox apply) in progress ---
+	# Check BEFORE the rebase block because git-am also uses rebase-apply/.
+	if [ -d "$GIT_DIR/rebase-apply" ] && [ -f "$GIT_DIR/rebase-apply/applying" ]; then
+		echo "[git-upload] ⚠️  A 'git am' patch application is in progress. Aborting…" >&2
+		git am --abort >/dev/null 2>&1 || true
+		echo "[git-upload] ✅ Patch application aborted." >&2
+	fi
+
 	# --- Rebase in progress ---
-	if [ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ]; then
+	if [ -d "$GIT_DIR/rebase-merge" ] || { [ -d "$GIT_DIR/rebase-apply" ] && [ ! -f "$GIT_DIR/rebase-apply/applying" ]; }; then
 		echo "[git-upload] ⚠️  A rebase is in progress." >&2
 		if git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null; then
 			# No conflicting files — try to continue
@@ -2599,7 +2600,7 @@ main() {
 				if [ -n "$conflict_files" ]; then
 					echo "[git-upload] Conflict files detected during rebase:" >&2
 					printf '%s\n' "$conflict_files" | sed 's/^/  - /' >&2
-					echo "[git-upload] Attempting auto-resolution (accept current changes)…" >&2
+					echo "[git-upload] Attempting auto-resolution (accepting your rebased changes for conflicted files)…" >&2
 					printf '%s\n' "$conflict_files" | while IFS= read -r cf; do
 						[ -n "$cf" ] && git checkout --theirs -- "$cf" 2>/dev/null && git add "$cf" 2>/dev/null
 					done
@@ -2700,13 +2701,6 @@ main() {
 			echo "[git-upload] Revert has conflicts. Aborting to preserve work…" >&2
 			git revert --abort >/dev/null 2>&1 || true
 		fi
-	fi
-
-	# --- git am (mailbox apply) in progress ---
-	if [ -d "$GIT_DIR/rebase-apply" ] && [ -f "$GIT_DIR/rebase-apply/applying" ]; then
-		echo "[git-upload] ⚠️  A 'git am' patch application is in progress. Aborting…" >&2
-		git am --abort >/dev/null 2>&1 || true
-		echo "[git-upload] ✅ Patch application aborted." >&2
 	fi
 
 	# ── Phase 1: Resolve detached HEAD ─────────────────────────────────
