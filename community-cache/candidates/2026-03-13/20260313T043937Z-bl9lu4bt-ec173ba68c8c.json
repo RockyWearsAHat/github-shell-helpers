@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "kind": "principle",
+  "topic": "agents",
+  "statement": "In multi-agent pipelines where all agents share the same primitive architecture (agent defines role and tool boundaries, skill carries methodology), enforce the separation consistently across every agent in the pipeline. A single agent violating the pattern by embedding methodology in its body undermines the progressive loading benefit for the entire pipeline and creates a maintenance inconsistency that is hard to catch without systematic review.",
+  "recommendationStrength": "recommended",
+  "applicability": "agent-design",
+  "evidenceRefs": [
+    {
+      "title": "VS Code — Custom agents (role and tool boundaries)",
+      "url": "https://code.visualstudio.com/docs/copilot/customization/custom-agents",
+      "sourceType": "official-doc"
+    },
+    {
+      "title": "VS Code — Agent skills (progressive loading architecture)",
+      "url": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+      "sourceType": "official-doc"
+    },
+    {
+      "title": "microsoft/PowerToys .github/ agents (consistent agent body sizes)",
+      "url": "https://github.com/microsoft/PowerToys/tree/main/.github/agents",
+      "sourceType": "public-example"
+    },
+    {
+      "title": "Burke Holland — Agent skills guide (skills for methodology)",
+      "url": "https://www.youtube.com/watch?v=fabAI1OKKww",
+      "sourceType": "public-video"
+    }
+  ],
+  "auditCompletedAt": "2026-03-12T22:00:00Z",
+  "freshnessCheckedAt": "2026-03-12T22:00:00Z",
+  "authoritativeSupport": "strong",
+  "liveRevalidated": true,
+  "contradictionCount": 0,
+  "clientBehaviorVersion": 1,
+  "publicSummary": "When building a multi-agent pipeline (e.g., context-research-evaluate-implement), keep every agent's body consistently thin (role, tools, boundaries, handoff shape). If one agent breaks the pattern by embedding its methodology directly, it gets preferential context treatment and makes skill updates ineffective for that phase.",
+  "cautionNotes": "Applies specifically to multi-agent pipelines that delegate to skills. Single-agent setups or agents without companion skills have different tradeoffs.",
+  "nonGeneralizationNotes": "",
+  "submittedAt": "2026-03-13T04:39:37Z",
+  "submissionId": "20260313T043937Z-bl9lu4bt",
+  "statementHash": "ec173ba68c8c2bda98449e819bf10d6b107c7e78b6d45d2694cc0eb82f26aca8"
+}
