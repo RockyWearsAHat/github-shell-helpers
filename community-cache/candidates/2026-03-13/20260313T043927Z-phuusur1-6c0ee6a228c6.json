@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "anti-pattern",
+  "topic": "workflow",
+  "statement": "Empty data scaffold files in .github/ (seeded templates with blank tables, placeholder status fields, and no real content) waste context tokens when agents load them. Either populate data files with real evidence before committing, or defer their creation until data exists to store.",
+  "recommendationStrength": "recommended",
+  "applicability": "workflow-general",
+  "evidenceRefs": [
+    {
+      "title": "VS Code — Custom instructions (token budget awareness)",
+      "url": "https://code.visualstudio.com/docs/copilot/customization/custom-instructions",
+      "sourceType": "official-doc"
+    },
+    {
+      "title": "Burke Holland — Level-up productivity (context rot discussion)",
+      "url": "https://www.youtube.com/watch?v=0XoXNG65rfg",
+      "sourceType": "public-video"
+    }
+  ],
+  "auditCompletedAt": "2026-03-12T22:00:00Z",
+  "freshnessCheckedAt": "2026-03-12T22:00:00Z",
+  "authoritativeSupport": "medium",
+  "liveRevalidated": true,
+  "contradictionCount": 0,
+  "clientBehaviorVersion": 1,
+  "publicSummary": "Seeded template files with empty tables and pending placeholders add structural tokens to agent context without providing useful information. Defer file creation until real data exists, or populate templates before committing them.",
+  "cautionNotes": "This applies to data artifacts that agents may read during workflows, not to schema files or contract documents that are referenced but rarely loaded into context.",
+  "nonGeneralizationNotes": "",
+  "submittedAt": "2026-03-13T04:39:27Z",
+  "submissionId": "20260313T043927Z-phuusur1",
+  "statementHash": "6c0ee6a228c6dc6ad9e4b5d2f249bcd7a23dd5f37fae40ecaaccd8f7c92c8558"
+}
