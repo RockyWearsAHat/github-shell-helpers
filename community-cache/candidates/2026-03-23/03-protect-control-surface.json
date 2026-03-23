@@ -30,5 +30,8 @@
   "clientBehaviorVersion": 1,
   "publicSummary": "Hooks are the deterministic layer; they are a better place than prose instructions to protect high-risk customization files from accidental mutation.",
   "cautionNotes": "Guardrails should still allow explicit customization work when the user asks for it.",
-  "nonGeneralizationNotes": "Describe the protected area generically as the customization control surface rather than naming a private workspace layout."
+  "nonGeneralizationNotes": "Describe the protected area generically as the customization control surface rather than naming a private workspace layout.",
+  "submittedAt": "2026-03-23T00:00:00Z",
+  "submissionId": "20260323T000000Z-ctlsurface03",
+  "statementHash": "795cb5c070322045147b82cfc8d0e176d63ed8b47d2a06f5ed004b57e167becb"
 }

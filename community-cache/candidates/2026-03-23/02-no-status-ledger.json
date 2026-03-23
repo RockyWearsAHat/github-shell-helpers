@@ -25,5 +25,8 @@
   "clientBehaviorVersion": 1,
   "publicSummary": "Always-on instruction files lose effectiveness when they mix stable operating rules with fast-changing product status.",
   "cautionNotes": "This does not forbid product philosophy in always-on files; it forbids volatile rollout or target-state status that drifts quickly.",
-  "nonGeneralizationNotes": "Do not publish private roadmap items or internal feature state while extracting this conclusion."
+  "nonGeneralizationNotes": "Do not publish private roadmap items or internal feature state while extracting this conclusion.",
+  "submittedAt": "2026-03-23T00:00:00Z",
+  "submissionId": "20260323T000000Z-noledger02",
+  "statementHash": "4ee7371b0d187a0dd841fdc00b1ffd405a4ee79d1dfeea96686eae40e3044ea1"
 }
