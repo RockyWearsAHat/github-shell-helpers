@@ -100,13 +100,8 @@ jobs:
           total_changed=$(printf '%s\n' "$changed_files" | grep -c . || echo 0)
 
           if [[ -n "$unexpected" ]]; then
-            echo "::error::Automated submission touches unexpected files:"
-            echo "$unexpected"
             echo "safe_to_merge=false" >> "$GITHUB_OUTPUT"
-            exit 1
-          fi
-
-          if [[ "$added_candidates" -gt 0 && "$added_candidates" -eq "$total_changed" ]]; then
+          elif [[ "$added_candidates" -gt 0 && "$added_candidates" -eq "$total_changed" ]]; then
             echo "safe_to_merge=true" >> "$GITHUB_OUTPUT"
           else
             echo "safe_to_merge=false" >> "$GITHUB_OUTPUT"
